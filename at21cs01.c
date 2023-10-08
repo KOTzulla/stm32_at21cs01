@@ -12,7 +12,7 @@ AT21CS01_Struct *at21cs01_Settings;
 
 uint8_t at21cs01_slaveAddress=0;
 uint8_t CommSpeed=0;
-
+GPIO_InitTypeDef GPIO_InitStruct = {0};
 
 void at21cs01_Init(AT21CS01_Struct *settings)
 {
@@ -35,19 +35,33 @@ void at21cs01_delay_ms(uint16_t us){
 
 void at21cs01_SIO_SetHigh()
 {
-	at21cs01_Settings->RX_GPIOx->BSRR = at21cs01_Settings->RX_GPIO_Pin;
+	at21cs01_Settings->TX_RX_GPIO->BSRR = at21cs01_Settings->TX_RX_GPIO_Pin;
 }
-
-
 void at21cs01_SIO_SetLow()
 {
-	at21cs01_Settings->RX_GPIOx->BSRR = (uint32_t)at21cs01_Settings->RX_GPIO_Pin << 16U;
+	at21cs01_Settings->TX_RX_GPIO->BSRR = (uint32_t)at21cs01_Settings->TX_RX_GPIO_Pin << 16U;
 }
+
 
 uint8_t at21cs01_SIO_GetValue()
 {
-	if((at21cs01_Settings->TX_GPIOx->IDR & at21cs01_Settings->TX_GPIO_Pin) != 0)return 1;
-	  return 0;
+	uint8_t res=0;
+	//set input mode
+	uint32_t temp = at21cs01_Settings->TX_RX_GPIO->MODER;
+	temp &= ~(GPIO_MODER_MODER0 << ((uint32_t)at21cs01_Settings->TX_RX_GPIO_Pin * 2U));
+	temp |= ((GPIO_MODE_INPUT & GPIO_MODE) << ((uint32_t)at21cs01_Settings->TX_RX_GPIO_Pin * 2U));
+	at21cs01_Settings->TX_RX_GPIO->MODER = temp;
+
+	if((at21cs01_Settings->TX_RX_GPIO->IDR & at21cs01_Settings->TX_RX_GPIO_Pin) != 0)res= 1;
+
+	//set output mode
+	temp = at21cs01_Settings->TX_RX_GPIO->MODER;
+	temp &= ~(GPIO_MODER_MODER0 << ((uint32_t)at21cs01_Settings->TX_RX_GPIO_Pin * 2U));
+	temp |= ((GPIO_MODE_OUTPUT_PP & GPIO_MODE) << ((uint32_t)at21cs01_Settings->TX_RX_GPIO_Pin * 2U));
+	at21cs01_Settings->TX_RX_GPIO->MODER = temp;
+
+
+	return res;
 }
 
 uint8_t at21cs01_ackNack(){
@@ -314,11 +328,11 @@ uint8_t at21cs01_setCommuncationSpeed(uint8_t speed){
 
 
     uint8_t temp;
-    speed |= at21cs01_slaveAddress;                     
+    speed |= at21cs01_slaveAddress;
 
-    at21cs01_startHS();                                
-    temp = at21cs01_txByte((uint8_t)(speed));            
-    at21cs01_startHS();                                
+    at21cs01_startHS();
+    temp = at21cs01_txByte((uint8_t)(speed));
+    at21cs01_startHS();
     if (((speed & 0xF0) == AT21CS01_SPEED_SLOW) & (temp == 0x00)){
     	CommSpeed = 1;
     }
@@ -331,26 +345,26 @@ return temp;
 uint8_t at21cs01_checkCommuncationSpeed(uint8_t speed){
 
     uint8_t temp;
-    speed |= at21cs01_slaveAddress;                      
+    speed |= at21cs01_slaveAddress;
 
-    at21cs01_startHS();                                
-    temp = at21cs01_txByte((uint8_t)(speed|0x01));      
-    at21cs01_startHS();                                 
+    at21cs01_startHS();
+    temp = at21cs01_txByte((uint8_t)(speed|0x01));
+    at21cs01_startHS();
 
-    if(temp == 0x00){                          
+    if(temp == 0x00){
         if((speed & 0xF0) == AT21CS01_SPEED_SLOW){
-            printf("    Standard Speed ACK\n"); 
+            printf("    Standard Speed ACK\n");
         }
         if((speed & 0xF0) == AT21CS01_SPEED_FAST){
-            printf("    High-Speed ACK\n");    
+            printf("    High-Speed ACK\n");
         }
     }
-    else    {                                  
+    else    {
         if((speed & 0xF0) == AT21CS01_SPEED_SLOW){
             printf("    Standard Speed NACK\n");
         }
         if((speed & 0xF0) == AT21CS01_SPEED_FAST){
-            printf("    High-Speed NACK\n");    
+            printf("    High-Speed NACK\n");
         }
     }
 return temp;

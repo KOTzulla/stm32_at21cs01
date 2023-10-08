@@ -22,11 +22,8 @@ typedef struct {
 
 	uint8_t prefCommunicationSpeed;
 	TIM_HandleTypeDef *timer;
-	GPIO_TypeDef* RX_GPIOx;
-	uint16_t RX_GPIO_Pin;
-
-	GPIO_TypeDef* TX_GPIOx;
-	uint16_t TX_GPIO_Pin;
+	GPIO_TypeDef* TX_RX_GPIO;
+	uint16_t TX_RX_GPIO_Pin;
 	uint8_t debug;
 } AT21CS01_Struct;
 
