@@ -314,11 +314,11 @@ uint8_t at21cs01_setCommuncationSpeed(uint8_t speed){
 
 
     uint8_t temp;
-    speed |= at21cs01_slaveAddress;                      //set slave address
+    speed |= at21cs01_slaveAddress;                     
 
-    at21cs01_startHS();                                  //start condition
-    temp = at21cs01_txByte((uint8_t)(speed));            //Device Address Byte
-    at21cs01_startHS();                                  //stop condition
+    at21cs01_startHS();                                
+    temp = at21cs01_txByte((uint8_t)(speed));            
+    at21cs01_startHS();                                
     if (((speed & 0xF0) == AT21CS01_SPEED_SLOW) & (temp == 0x00)){
     	CommSpeed = 1;
     }
@@ -331,26 +331,26 @@ return temp;
 uint8_t at21cs01_checkCommuncationSpeed(uint8_t speed){
 
     uint8_t temp;
-    speed |= at21cs01_slaveAddress;                      //set slave address
+    speed |= at21cs01_slaveAddress;                      
 
-    at21cs01_startHS();                                  //start condition
-    temp = at21cs01_txByte((uint8_t)(speed|0x01));       //Device Address Byte
-    at21cs01_startHS();                                  //stop condition
+    at21cs01_startHS();                                
+    temp = at21cs01_txByte((uint8_t)(speed|0x01));      
+    at21cs01_startHS();                                 
 
-    if(temp == 0x00){                           //if device ACKs
+    if(temp == 0x00){                          
         if((speed & 0xF0) == AT21CS01_SPEED_SLOW){
-            printf("    Standard Speed ACK\n"); //TX character string over UART
+            printf("    Standard Speed ACK\n"); 
         }
         if((speed & 0xF0) == AT21CS01_SPEED_FAST){
-            printf("    High-Speed ACK\n");     //TX character string over UART
+            printf("    High-Speed ACK\n");    
         }
     }
-    else    {                                   //if device NACKs
+    else    {                                  
         if((speed & 0xF0) == AT21CS01_SPEED_SLOW){
-            printf("    Standard Speed NACK\n");//TX character string over UART
+            printf("    Standard Speed NACK\n");
         }
         if((speed & 0xF0) == AT21CS01_SPEED_FAST){
-            printf("    High-Speed NACK\n");    //TX character string over UART
+            printf("    High-Speed NACK\n");    
         }
     }
 return temp;
